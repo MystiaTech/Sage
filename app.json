@@ -2,6 +2,7 @@
   "expo": {
     "name": "Sage",
     "slug": "Sage",
+    "scheme": "sage",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +26,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      ["expo-camera", {"cameraPermission":"Allow Sage to use your camera to scan barcodes"}],
+      "expo-sqlite"
+    ]
   }
 }
