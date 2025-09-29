@@ -1,0 +1,17 @@
+# .gitea/workflows/ota.yml
+name: EAS Update
+on:
+  push:
+    branches: [ main ]
+jobs:
+  ota:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - name: Publish OTA to production
+        run: npx eas-cli@latest update --channel production --message "CI OTA $GITHUB_SHA"
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

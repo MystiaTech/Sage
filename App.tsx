@@ -1,4 +1,4 @@
-// App.tsx
+// App.tsx  (updates: ThemeProvider + fixed headerRight wrapper)
 import React, { useEffect } from "react";
 import { View, Button } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
@@ -10,16 +10,17 @@ import ScanScreen from "./src/screens/ScanScreen";
 import AddItem from "./src/screens/AddItem";
 import Settings from "./src/screens/Settings";
 import { runMigrations } from "./src/db";
+import { ThemeProvider, useNavTheme } from "./src/theme";
 
 const Stack = createNativeStackNavigator();
 
-export default function App() {
-  useEffect(() => {
-    (async () => { await runMigrations(); })();
-  }, []);
+function AppInner() {
+  const navTheme = useNavTheme();
+
+  useEffect(() => { (async () => { await runMigrations(); })(); }, []);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <Stack.Navigator>
         <Stack.Screen
           name="Dashboard"
@@ -47,5 +48,13 @@ export default function App() {
         <Stack.Screen name="Settings" component={Settings} />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppInner />
+    </ThemeProvider>
   );
 }

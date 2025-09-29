@@ -1,4 +1,4 @@
-// src/db.ts
+// src/db.ts  (UPDATED) — helpers: smart upsert, decrement/use, discard, test item
 import { openDatabaseSync, type SQLiteDatabase } from "expo-sqlite";
 
 export const appDb: SQLiteDatabase = openDatabaseSync("sage.sqlite");
@@ -47,15 +47,9 @@ export async function runMigrations() {
     CREATE INDEX IF NOT EXISTS idx_stock_status ON stock(status);
   `);
 
-  await appDb.runAsync(
-    `INSERT OR IGNORE INTO locations (id,name,kind,created_at) VALUES ('loc_pantry','Pantry','pantry',datetime('now'))`
-  );
-  await appDb.runAsync(
-    `INSERT OR IGNORE INTO locations (id,name,kind,created_at) VALUES ('loc_fridge','Fridge','fridge',datetime('now'))`
-  );
-  await appDb.runAsync(
-    `INSERT OR IGNORE INTO locations (id,name,kind,created_at) VALUES ('loc_freezer','Freezer','freezer',datetime('now'))`
-  );
+  await appDb.runAsync(`INSERT OR IGNORE INTO locations (id,name,kind,created_at) VALUES ('loc_pantry','Pantry','pantry',datetime('now'))`);
+  await appDb.runAsync(`INSERT OR IGNORE INTO locations (id,name,kind,created_at) VALUES ('loc_fridge','Fridge','fridge',datetime('now'))`);
+  await appDb.runAsync(`INSERT OR IGNORE INTO locations (id,name,kind,created_at) VALUES ('loc_freezer','Freezer','freezer',datetime('now'))`);
 }
 
 export async function execAsync(db: SQLiteDatabase, sql: string, params: any[] = []) {
@@ -66,4 +60,112 @@ export async function execAsync(db: SQLiteDatabase, sql: string, params: any[] =
 export async function queryAsync<T = any>(db: SQLiteDatabase, sql: string, params: any[] = []) {
   const rows = await db.getAllAsync<T>(sql, params);
   return rows as T[];
+}
+
+/** Find product by barcode (if exists) */
+export async function findProductByBarcode(barcode: string) {
+  const rows = await queryAsync<{ id: string; name: string; brand?: string; default_unit?: string; shelf_life_days?: number|null; image_url?: string|null }>(
+    appDb,
+    `SELECT id,name,brand,default_unit,shelf_life_days,image_url FROM products WHERE barcode=? LIMIT 1`,
+    [barcode]
+  );
+  return rows[0] ?? null;
+}
+
+/** Create product record */
+export async function createProduct(p: {
+  id?: string; barcode?: string|null; name: string; brand?: string|null; default_unit?: string|null; shelf_life_days?: number|null; image_url?: string|null;
+}) {
+  const id = p.id ?? ("prd_" + Math.random().toString(36).slice(2,10));
+  await execAsync(appDb,
+    `INSERT INTO products (id, barcode, name, brand, default_unit, shelf_life_days, image_url, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+    [id, p.barcode ?? null, p.name, p.brand ?? null, p.default_unit ?? null, p.shelf_life_days ?? null, p.image_url ?? null]
+  );
+  return id;
+}
+
+/** Smart upsert: if same product + location + unit + same expiry date → increment quantity; else insert a new row */
+export async function upsertStockSmart(params: {
+  product_id: string;
+  location_id: "loc_pantry"|"loc_fridge"|"loc_freezer";
+  unit: string|null;
+  quantity: number;
+  acquired_at?: string|null;
+  best_before?: string|null;
+  use_by?: string|null;
+  est_expires_at?: string|null;
+}) {
+  const expiryKey = params.use_by ?? params.best_before ?? params.est_expires_at ?? null;
+
+  const match = await queryAsync<{ id: string; quantity: number }>(
+    appDb,
+    `SELECT id, quantity
+     FROM stock
+     WHERE product_id=? AND location_id=? AND status='in_stock'
+       AND IFNULL(unit,'') = IFNULL(?, '')
+       AND date(COALESCE(use_by, best_before, est_expires_at)) = date(?)`,
+    [params.product_id, params.location_id, params.unit ?? null, expiryKey]
+  );
+
+  if (match[0]) {
+    await execAsync(appDb,
+      `UPDATE stock SET quantity = ?, updated_at=datetime('now') WHERE id=?`,
+      [match[0].quantity + params.quantity, match[0].id]
+    );
+    return match[0].id;
+  }
+
+  const id = "stk_" + Math.random().toString(36).slice(2,10);
+  await execAsync(appDb,
+    `INSERT INTO stock (id, product_id, location_id, quantity, unit, acquired_at, best_before, use_by, est_expires_at, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'in_stock', datetime('now'), datetime('now'))`,
+    [id, params.product_id, params.location_id, params.quantity, params.unit ?? null, params.acquired_at ?? null,
+      params.best_before ?? null, params.use_by ?? null, params.est_expires_at ?? null]
+  );
+  return id;
+}
+
+/** Decrement quantity by 1; if hits 0 → mark consumed */
+export async function useOne(stockId: string) {
+  const row = (await queryAsync<{ quantity: number }>(appDb, `SELECT quantity FROM stock WHERE id=?`, [stockId]))[0];
+  if (!row) return;
+  if (row.quantity > 1) {
+    await execAsync(appDb, `UPDATE stock SET quantity=quantity-1, updated_at=datetime('now') WHERE id=?`, [stockId]);
+  } else {
+    await execAsync(appDb, `UPDATE stock SET status='consumed', updated_at=datetime('now') WHERE id=?`, [stockId]);
+  }
+}
+
+/** Mark whole row discarded */
+export async function discardStock(stockId: string) {
+  await execAsync(appDb, `UPDATE stock SET status='discarded', updated_at=datetime('now') WHERE id=?`, [stockId]);
+}
+
+/** Insert a test product that expires in N days (for Discord tests) */
+export async function insertTestItem(daysAhead = 1) {
+  const productName = `Sage Test Item`;
+  const testBarcode = "0000000000000"; // EAN-13 placeholder
+  // ensure product exists (idempotent-ish)
+  let prod = await findProductByBarcode(testBarcode);
+  const pid = prod?.id ?? await createProduct({
+    barcode: testBarcode, name: productName, brand: "Sage", default_unit: "count", shelf_life_days: daysAhead, image_url: null
+  });
+
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  const iso = d.toISOString().slice(0,10);
+
+  const id = await upsertStockSmart({
+    product_id: pid,
+    location_id: "loc_pantry",
+    unit: "count",
+    quantity: 1,
+    acquired_at: new Date().toISOString().slice(0,10),
+    best_before: null,
+    use_by: iso,
+    est_expires_at: null
+  });
+
+  return { stock_id: id, product_id: pid, use_by: iso };
 }

@@ -25,6 +25,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.mystiatech.Sage"
@@ -41,12 +43,20 @@
       ],
       "expo-sqlite",
       "expo-notifications",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-updates"
     ],
     "extra": {
       "eas": {
         "projectId": "43704373-fd2a-4cb4-b1bd-741da8f1863d"
       }
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "enabled": true,
+      "url": "https://u.expo.dev/43704373-fd2a-4cb4-b1bd-741da8f1863d"
     }
   }
 }

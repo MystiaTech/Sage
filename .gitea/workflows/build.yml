@@ -1,0 +1,17 @@
+# .gitea/workflows/build.yml
+name: EAS Build
+on:
+  push:
+    tags: [ "v*" ]
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - name: Build Android (production)
+        run: npx eas-cli@latest build -p android --profile production --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
