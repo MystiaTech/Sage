@@ -11,12 +11,21 @@ export default function Settings() {
   const [url, setUrl] = React.useState("");
   const [days, setDays] = React.useState("3");
 
-  React.useEffect(() => { (async () => { const saved = await getDiscordWebhook(); if (saved) setUrl(saved); })(); }, []);
+  // Intentionally do not auto-load the saved webhook to avoid exposing it before auth.
 
   async function save() { await setDiscordWebhook(url || null); Alert.alert("Saved", url ? "Webhook saved" : "Webhook cleared"); }
   async function testSend() {
     try { const n = parseInt(days || "3", 10) || 3; const res = await sendExpiringToDiscord(n); Alert.alert("Discord", `Sent ${res.sent} item(s).`); }
     catch (e: any) { Alert.alert("Discord", e?.message ?? "Failed to send"); }
+  }
+  async function reveal() {
+    try {
+      const saved = await getDiscordWebhook();
+      if (!saved) { Alert.alert("Discord", "No webhook saved"); }
+      setUrl(saved || "");
+    } catch (e: any) {
+      Alert.alert("Discord", e?.message ?? "Failed to retrieve webhook");
+    }
   }
   async function addTestItemAndSend() { try { await insertTestItem(1); const res = await sendExpiringToDiscord(3); Alert.alert("OK", `Inserted test item and sent ${res.sent} item(s).`); } catch (e:any){ Alert.alert("Error", e?.message ?? "Failed"); } }
   async function addTestItemOnly() { try { const r = await insertTestItem(1); Alert.alert("OK", `Inserted test item expiring ${r.use_by}.`); } catch (e:any){ Alert.alert("Error", e?.message ?? "Failed"); } }

@@ -1,16 +1,23 @@
 // eas.json (at project root)
 {
-  "cli": { "version": ">= 10.0.0" },
+  "cli": { "version": ">= 10.0.0", "appVersionSource": "remote" },
   "build": {
     "development": {
+      "environment": "development",
       "developmentClient": true,
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      channel: "development"
+      "channel": "development"
     },
-    "preview": { "distribution": "internal", channel: "preview" },
+    "preview": { 
+      "environment": "preview",
+      "distribution": "internal",
+      "channel": "preview" 
+    },
     "production": {
-      channel: "production"
+      "environment": "production",
+      "channel": "production",
+      "autoIncrement": true
     }
   },
   "submit": { "production": {} }

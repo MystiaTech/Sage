@@ -1,9 +1,11 @@
 // src/db.ts  (UPDATED) — helpers: smart upsert, decrement/use, discard, test item
 import { openDatabaseSync, type SQLiteDatabase } from "expo-sqlite";
+import * as SecureStore from "expo-secure-store";
 
 export const appDb: SQLiteDatabase = openDatabaseSync("sage.sqlite");
 
 export async function runMigrations() {
+  await maybeEnableEncryption(appDb);
   await appDb.execAsync(`
     PRAGMA foreign_keys = ON;
 
@@ -60,6 +62,55 @@ export async function execAsync(db: SQLiteDatabase, sql: string, params: any[] =
 export async function queryAsync<T = any>(db: SQLiteDatabase, sql: string, params: any[] = []) {
   const rows = await db.getAllAsync<T>(sql, params);
   return rows as T[];
+}
+
+// --- Optional SQLCipher encryption for fresh installs ---
+const DB_KEY_K = "db_key_hex";
+
+function ssOpts(): SecureStore.SecureStoreOptions | undefined {
+  try {
+    const supported = (SecureStore as any).canUseBiometricAuthentication?.() ?? false;
+    return supported ? { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function getOrCreateDbKeyHex(): Promise<string> {
+  const existing = await SecureStore.getItemAsync(DB_KEY_K, ssOpts());
+  if (existing) return existing;
+  const hex = randomHex(32);
+  await SecureStore.setItemAsync(DB_KEY_K, hex, ssOpts());
+  return hex;
+}
+
+async function maybeEnableEncryption(db: SQLiteDatabase) {
+  try {
+    const rows = await queryAsync<{ name: string }>(
+      db,
+      "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('locations','products','stock')"
+    );
+    if (rows.length > 0) return; // existing DB: skip to avoid breaking upgrades
+
+    const keyHex = await getOrCreateDbKeyHex();
+    await execAsync(db, `PRAGMA cipher_compatibility = 4; PRAGMA key = '${keyHex}';`);
+    // Best-effort check; unknown pragma when SQLCipher not present returns empty set
+    await queryAsync<any>(db, "PRAGMA cipher_version;").catch(() => []);
+  } catch {
+    // Ignore and continue without encryption
+  }
+}
+
+function randomHex(bytes: number): string {
+  const arr = new Uint8Array(bytes);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(arr);
+  } else {
+    for (let i = 0; i < bytes; i++) arr[i] = Math.floor(Math.random() * 256);
+  }
+  let out = "";
+  for (let i = 0; i < arr.length; i++) out += arr[i].toString(16).padStart(2, "0");
+  return out;
 }
 
 /** Find product by barcode (if exists) */

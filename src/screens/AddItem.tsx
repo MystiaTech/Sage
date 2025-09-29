@@ -29,18 +29,14 @@ export default function AddItem({ route, navigation }: any) {
   const [useBy, setUseBy] = useState("");
   const [shelfLifeDays, setShelfLifeDays] = useState<number | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      if (!norm.digits || !autofill) return;
-      const info = await fetchProductByBarcode(norm.canonical);
-      if (!info) return;
-      if (info.name && !name) setName(info.name);
-      if (info.brand && !brand) setBrand(info.brand);
-      if (info.imageUrl) setImageUrl(info.imageUrl);
-      if (info.shelfLifeDays && shelfLifeDays == null) setShelfLifeDays(info.shelfLifeDays);
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [norm.canonical, autofill]);
+    useEffect(() => {
+      const pf = route?.params?.prefill;
+      if (!pf) return;
+      if (pf.name && !name) setName(pf.name);
+      if (pf.brand && !brand) setBrand(pf.brand);
+      if (pf.imageUrl && !imageUrl) setImageUrl(pf.imageUrl);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [route?.params?.prefill]);
 
   const est = useMemo(() => computeEstExpiry({ acquiredAt, shelfLifeDays: shelfLifeDays ?? undefined }), [acquiredAt, shelfLifeDays]);
   const previewExpiry = bestExpiry(useBy || null, bestBefore || null, est);
