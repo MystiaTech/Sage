@@ -1,4 +1,4 @@
-// App.tsx  (updates: ThemeProvider + fixed headerRight wrapper)
+// App.tsx  (UPDATE) — wrap screens with themed background
 import React, { useEffect } from "react";
 import { View, Button } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
@@ -16,9 +16,7 @@ const Stack = createNativeStackNavigator();
 
 function AppInner() {
   const navTheme = useNavTheme();
-
   useEffect(() => { (async () => { await runMigrations(); })(); }, []);
-
   return (
     <NavigationContainer theme={navTheme}>
       <Stack.Navigator>
@@ -50,11 +48,4 @@ function AppInner() {
     </NavigationContainer>
   );
 }
-
-export default function App() {
-  return (
-    <ThemeProvider>
-      <AppInner />
-    </ThemeProvider>
-  );
-}
+export default function App() { return (<ThemeProvider><AppInner /></ThemeProvider>); }
