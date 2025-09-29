@@ -8,7 +8,8 @@ export function computeEstExpiry(opts: {
     ? new Date(opts.acquiredAt)
     : null;
   const days = opts.openedAt && opts.openedLifeDays != null ? opts.openedLifeDays
-             : opts.acquiredAt && opts.shelfLifeDays != null ? opts.shelfLifeDays : null;
+             : opts.acquiredAt && opts.shelfLifeDays != null ? opts.shelfLifeDays
+             : null;
   if (!base || days == null) return null;
   const d = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()));
   d.setUTCDate(d.getUTCDate() + days);

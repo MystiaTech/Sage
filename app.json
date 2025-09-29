@@ -22,14 +22,31 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.mystiatech.Sage"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      ["expo-camera", {"cameraPermission":"Allow Sage to use your camera to scan barcodes"}],
-      "expo-sqlite"
-    ]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Sage to use your camera to scan barcodes"
+        }
+      ],
+      "expo-sqlite",
+      "expo-notifications",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "43704373-fd2a-4cb4-b1bd-741da8f1863d"
+      }
+    }
   }
 }

@@ -2,20 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Button } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-type RootStackParamList = {
-  Scan: undefined;
-  AddItem: { barcode?: string };
-};
-
-export default function ScanScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "Scan">) {
+export default function ScanScreen({ navigation }: any) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => { if (permission && !permission.granted) requestPermission(); }, [permission]);
 
-  if (!permission) return <Center> <Text>Checking camera…</Text> </Center>;
+  if (!permission) return <Center><Text>Checking camera…</Text></Center>;
   if (!permission.granted) {
     return (
       <Center>

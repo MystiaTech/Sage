@@ -1,7 +1,8 @@
 // src/screens/Dashboard.tsx
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, Button } from "react-native";
 import { appDb, queryAsync } from "../db";
+import { sendExpiringToDiscord } from "../discord";
 
 type Row = {
   id: string; product_id: string; best_before?: string; use_by?: string; est_expires_at?: string;
@@ -29,6 +30,9 @@ export default function Dashboard() {
   return (
     <View style={{ flex:1, padding:16 }}>
       <Text style={{ fontSize:22, fontWeight:"600", marginBottom:8 }}>Expiring Soon (7 days)</Text>
+      <View style={{ marginBottom: 8 }}>
+        <Button title="Send to Discord (3 days)" onPress={() => sendExpiringToDiscord(3)} />
+      </View>
       <FlatList
         data={rows}
         keyExtractor={(r) => r.id}

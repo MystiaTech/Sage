@@ -47,7 +47,6 @@ export async function runMigrations() {
     CREATE INDEX IF NOT EXISTS idx_stock_status ON stock(status);
   `);
 
-  // seed locations
   await appDb.runAsync(
     `INSERT OR IGNORE INTO locations (id,name,kind,created_at) VALUES ('loc_pantry','Pantry','pantry',datetime('now'))`
   );

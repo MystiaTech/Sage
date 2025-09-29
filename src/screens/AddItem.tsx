@@ -1,16 +1,12 @@
 // src/screens/AddItem.tsx
 import React, { useMemo, useState } from "react";
 import { View, Text, TextInput, Button, Alert } from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { appDb, execAsync } from "../db";
 import { computeEstExpiry, bestExpiry } from "../expiry";
+import { ensureNotificationPermissions, scheduleExpiryReminder } from "../notify";
 
-type RootStackParamList = {
-  AddItem: { barcode?: string };
-};
-
-export default function AddItem({ route, navigation }: NativeStackScreenProps<RootStackParamList, "AddItem">) {
-  const initialBarcode = route.params?.barcode ?? "";
+export default function AddItem({ route, navigation }: any) {
+  const initialBarcode = route?.params?.barcode ?? "";
   const [barcode, setBarcode] = useState(initialBarcode);
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
@@ -41,6 +37,9 @@ export default function AddItem({ route, navigation }: NativeStackScreenProps<Ro
       parseFloat(qty || "1"), unit, acquiredAt || null,
       bestBefore || null, useBy || null, est || null
     ]);
+
+    await ensureNotificationPermissions();
+    if (previewExpiry) await scheduleExpiryReminder(name || "Unnamed item", previewExpiry, 24);
 
     Alert.alert("Saved", previewExpiry ? `Expiry: ${previewExpiry}` : "No expiry set");
     navigation.popToTop();
