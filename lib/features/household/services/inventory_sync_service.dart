@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../../../data/local/hive_database.dart';
 import '../../inventory/models/food_item.dart';
 
@@ -7,10 +8,23 @@ import '../../inventory/models/food_item.dart';
 class InventorySyncService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   StreamSubscription? _itemsSubscription;
+  final _syncCallbacks = <VoidCallback>[];
+
+  /// Register a callback to be called when sync occurs
+  void addSyncCallback(VoidCallback callback) {
+    _syncCallbacks.add(callback);
+  }
+
+  /// Remove a sync callback
+  void removeSyncCallback(VoidCallback callback) {
+    _syncCallbacks.remove(callback);
+  }
 
   /// Start listening to household items from Firebase
   Future<void> startSync(String householdId) async {
     await stopSync(); // Stop any existing subscription
+
+    print('📡 Starting Firebase sync for household: $householdId');
 
     _itemsSubscription = _firestore
         .collection('households')
@@ -18,7 +32,15 @@ class InventorySyncService {
         .collection('items')
         .snapshots()
         .listen((snapshot) async {
+      print('🔄 Received ${snapshot.docs.length} items from Firebase');
       await _handleItemsUpdate(snapshot, householdId);
+
+      // Notify listeners
+      for (final callback in _syncCallbacks) {
+        callback();
+      }
+    }, onError: (error) {
+      print('❌ Firebase sync error: $error');
     });
   }
 
@@ -33,10 +55,13 @@ class InventorySyncService {
     QuerySnapshot snapshot,
     String householdId,
   ) async {
+    print('📦 Processing ${snapshot.docs.length} items from Firebase');
     final box = await HiveDatabase.getFoodBox();
 
     // Track Firebase item IDs
     final firebaseItemIds = <String>{};
+    int newItems = 0;
+    int updatedItems = 0;
 
     for (final doc in snapshot.docs) {
       firebaseItemIds.add(doc.id);
@@ -53,6 +78,8 @@ class InventorySyncService {
         if (existingItem == null) {
           // New item from Firebase - add to local Hive with specific key
           await box.put(itemKey, item);
+          newItems++;
+          print('➕ Added new item from Firebase: ${item.name} (key: $itemKey)');
         } else {
           // Update existing item if Firebase version is newer
           final firebaseModified = DateTime.parse(data['lastModified'] as String);
@@ -61,10 +88,14 @@ class InventorySyncService {
           if (firebaseModified.isAfter(localModified)) {
             // Firebase version is newer - update local
             await box.put(itemKey, item);
+            updatedItems++;
+            print('🔄 Updated item from Firebase: ${item.name} (key: $itemKey)');
           }
         }
       }
     }
+
+    print('📊 Sync stats: $newItems new, $updatedItems updated');
 
     // Delete items that no longer exist in Firebase
     final itemsToDelete = <int>[];
@@ -76,8 +107,11 @@ class InventorySyncService {
       }
     }
 
-    for (final key in itemsToDelete) {
-      await box.delete(key);
+    if (itemsToDelete.isNotEmpty) {
+      print('🗑️ Deleting ${itemsToDelete.length} items that no longer exist in Firebase');
+      for (final key in itemsToDelete) {
+        await box.delete(key);
+      }
     }
   }
 

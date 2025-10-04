@@ -28,6 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    _syncService.removeSyncCallback(_onItemsSync);
     _syncService.stopSync();
     super.dispose();
   }
@@ -36,11 +37,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final settings = await HiveDatabase.getSettings();
     if (settings.currentHouseholdId != null) {
       try {
+        // Register callback to refresh UI when items sync
+        _syncService.addSyncCallback(_onItemsSync);
+
         await _syncService.startSync(settings.currentHouseholdId!);
         print('🔄 Started syncing inventory for household: ${settings.currentHouseholdId}');
       } catch (e) {
         print('Failed to start sync: $e');
       }
+    }
+  }
+
+  void _onItemsSync() {
+    if (mounted) {
+      // Refresh all inventory providers when Firebase syncs
+      ref.invalidate(itemCountProvider);
+      ref.invalidate(expiringSoonProvider);
+      print('✅ UI refreshed after Firebase sync');
     }
   }
 
