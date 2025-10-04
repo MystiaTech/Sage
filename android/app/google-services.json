@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "PLACEHOLDER",
+    "project_number": "41823683095",
     "project_id": "sage-kitchen-management",
-    "storage_bucket": "sage-kitchen-management.appspot.com"
+    "storage_bucket": "sage-kitchen-management.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:PLACEHOLDER:android:PLACEHOLDER",
+        "mobilesdk_app_id": "1:41823683095:android:be7f05a025091b77eed252",
         "android_client_info": {
           "package_name": "com.github.mystiatech.sage"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "PLACEHOLDER_API_KEY"
+          "current_key": "AIzaSyCh96OkpduplIxBDc5_-MFq5bgIjvKW3AE"
         }
       ],
       "services": {

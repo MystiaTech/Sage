@@ -1,11 +1,13 @@
 import 'package:hive/hive.dart';
 import '../../../data/local/hive_database.dart';
 import '../../settings/models/app_settings.dart';
+import '../../household/services/firebase_household_service.dart';
 import '../models/food_item.dart';
 import 'inventory_repository.dart';
 
-/// Hive implementation of InventoryRepository
+/// Hive implementation of InventoryRepository with Firebase sync
 class InventoryRepositoryImpl implements InventoryRepository {
+  final _firebaseService = FirebaseHouseholdService();
   Future<Box<FoodItem>> get _box async => await HiveDatabase.getFoodBox();
 
   /// Get the current household ID from settings
@@ -47,17 +49,57 @@ class InventoryRepositoryImpl implements InventoryRepository {
     final box = await _box;
     item.lastModified = DateTime.now();
     await box.add(item);
+
+    // Sync to Firebase if in a household
+    if (item.householdId != null && item.key != null) {
+      try {
+        await _firebaseService.addFoodItem(
+          item.householdId!,
+          item,
+          item.key.toString(),
+        );
+      } catch (e) {
+        print('Failed to sync item to Firebase: $e');
+      }
+    }
   }
 
   @override
   Future<void> updateItem(FoodItem item) async {
     item.lastModified = DateTime.now();
     await item.save();
+
+    // Sync to Firebase if in a household
+    if (item.householdId != null && item.key != null) {
+      try {
+        await _firebaseService.updateFoodItem(
+          item.householdId!,
+          item,
+          item.key.toString(),
+        );
+      } catch (e) {
+        print('Failed to sync item update to Firebase: $e');
+      }
+    }
   }
 
   @override
   Future<void> deleteItem(int id) async {
     final box = await _box;
+    final item = box.get(id);
+
+    // Sync deletion to Firebase if in a household
+    if (item != null && item.householdId != null) {
+      try {
+        await _firebaseService.deleteFoodItem(
+          item.householdId!,
+          id.toString(),
+        );
+      } catch (e) {
+        print('Failed to sync item deletion to Firebase: $e');
+      }
+    }
+
     await box.delete(id);
   }
 
