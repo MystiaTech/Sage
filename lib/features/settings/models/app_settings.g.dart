@@ -22,13 +22,15 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       discordNotificationsEnabled: fields[2] as bool,
       defaultView: fields[3] as String,
       sortBy: fields[4] as String,
+      userName: fields[5] as String?,
+      currentHouseholdId: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettings obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.discordWebhookUrl)
       ..writeByte(1)
@@ -38,7 +40,11 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       ..writeByte(3)
       ..write(obj.defaultView)
       ..writeByte(4)
-      ..write(obj.sortBy);
+      ..write(obj.sortBy)
+      ..writeByte(5)
+      ..write(obj.userName)
+      ..writeByte(6)
+      ..write(obj.currentHouseholdId);
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../features/inventory/models/food_item.dart';
 import '../../features/settings/models/app_settings.dart';
+import '../../features/settings/models/household.dart';
 
 /// Singleton class to manage Hive database
 class HiveDatabase {
@@ -17,6 +18,7 @@ class HiveDatabase {
     Hive.registerAdapter(LocationAdapter());
     Hive.registerAdapter(ExpirationStatusAdapter());
     Hive.registerAdapter(AppSettingsAdapter());
+    Hive.registerAdapter(HouseholdAdapter());
 
     _initialized = true;
   }
@@ -46,6 +48,29 @@ class HiveDatabase {
       return settings;
     }
     return box.getAt(0)!;
+  }
+
+  /// Get the households box
+  static Future<Box<Household>> getHouseholdsBox() async {
+    if (!Hive.isBoxOpen('households')) {
+      return await Hive.openBox<Household>('households');
+    }
+    return Hive.box<Household>('households');
+  }
+
+  /// Get household by ID
+  static Future<Household?> getHousehold(String id) async {
+    final box = await getHouseholdsBox();
+    return box.values.firstWhere(
+      (h) => h.id == id,
+      orElse: () => throw Exception('Household not found'),
+    );
+  }
+
+  /// Save household
+  static Future<void> saveHousehold(Household household) async {
+    final box = await getHouseholdsBox();
+    await box.put(household.id, household);
   }
 
   /// Clear all data

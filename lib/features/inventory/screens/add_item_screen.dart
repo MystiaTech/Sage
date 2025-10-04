@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/colors.dart';
+import '../../../data/local/hive_database.dart';
 import '../models/food_item.dart';
 import '../controllers/inventory_controller.dart';
 import '../services/barcode_service.dart';
@@ -118,6 +119,9 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
 
   Future<void> _saveItem() async {
     if (_formKey.currentState!.validate()) {
+      // Get current household ID from settings
+      final settings = await HiveDatabase.getSettings();
+
       final item = FoodItem()
         ..name = _nameController.text.trim()
         ..barcode = _barcode
@@ -132,6 +136,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
         ..notes = _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim()
+        ..householdId = settings.currentHouseholdId
         ..lastModified = DateTime.now();
 
       try {

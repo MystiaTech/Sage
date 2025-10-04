@@ -6,6 +6,7 @@ import '../models/app_settings.dart';
 import '../../notifications/services/discord_service.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
+import 'household_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -87,6 +88,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
             activeColor: AppColors.primary,
+          ),
+
+          const Divider(),
+
+          // Sharing Section
+          _buildSectionHeader('Sharing'),
+          ListTile(
+            title: const Text('Household Sharing'),
+            subtitle: Text(_settings!.currentHouseholdId != null
+                ? 'Connected to household'
+                : 'Share inventory with family'),
+            leading: const Icon(Icons.group, color: AppColors.primary),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HouseholdScreen(),
+                ),
+              );
+              // Reload settings after returning from household screen
+              _loadSettings();
+            },
           ),
 
           const Divider(),

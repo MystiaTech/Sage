@@ -19,11 +19,19 @@ class AppSettings extends HiveObject {
   @HiveField(4)
   String sortBy; // 'expiration', 'name', 'location'
 
+  @HiveField(5)
+  String? userName; // User's name for household sharing
+
+  @HiveField(6)
+  String? currentHouseholdId; // ID of the household they're in
+
   AppSettings({
     this.discordWebhookUrl,
     this.expirationAlertsEnabled = true,
     this.discordNotificationsEnabled = false,
     this.defaultView = 'grid',
     this.sortBy = 'expiration',
+    this.userName,
+    this.currentHouseholdId,
   });
 }
