@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/local/hive_database.dart';
+import '../../household/services/firebase_household_service.dart';
 import '../models/app_settings.dart';
 import '../models/household.dart';
 
@@ -13,6 +14,7 @@ class HouseholdScreen extends StatefulWidget {
 }
 
 class _HouseholdScreenState extends State<HouseholdScreen> {
+  final _firebaseService = FirebaseHouseholdService();
   AppSettings? _settings;
   Household? _household;
   bool _isLoading = true;
@@ -29,7 +31,8 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
 
     if (settings.currentHouseholdId != null) {
       try {
-        household = await HiveDatabase.getHousehold(settings.currentHouseholdId!);
+        // Load from Firebase
+        household = await _firebaseService.getHousehold(settings.currentHouseholdId!);
       } catch (e) {
         // Household not found
       }
@@ -81,13 +84,10 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
     );
 
     if (result != null && result.isNotEmpty) {
-      final household = Household(
-        id: Household.generateCode(),
-        name: result,
-        ownerName: _settings!.userName!,
-        members: [_settings!.userName!],
-      );
+      // Create household in Firebase
+      final household = await _firebaseService.createHousehold(result, _settings!.userName!);
 
+      // Also save to local Hive for offline access
       await HiveDatabase.saveHousehold(household);
 
       _settings!.currentHouseholdId = household.id;
@@ -150,26 +150,32 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
 
     if (result != null && result.isNotEmpty) {
       try {
-        final household = await HiveDatabase.getHousehold(result.toUpperCase());
+        final code = result.toUpperCase();
 
-        if (household != null) {
-          if (!household.members.contains(_settings!.userName!)) {
-            household.members.add(_settings!.userName!);
-            await household.save();
-          }
+        // Join household in Firebase
+        final success = await _firebaseService.joinHousehold(code, _settings!.userName!);
 
-          _settings!.currentHouseholdId = household.id;
-          await _settings!.save();
+        if (success) {
+          // Load the household data
+          final household = await _firebaseService.getHousehold(code);
 
-          await _loadData();
+          if (household != null) {
+            // Save to local Hive for offline access
+            await HiveDatabase.saveHousehold(household);
 
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Joined ${household.name}!'),
-                backgroundColor: AppColors.success,
-              ),
-            );
+            _settings!.currentHouseholdId = household.id;
+            await _settings!.save();
+
+            await _loadData();
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Joined ${household.name}!'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            }
           }
         } else {
           if (mounted) {
@@ -184,8 +190,8 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Household not found. Check the code and try again.'),
+            SnackBar(
+              content: Text('Error joining household: $e'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -261,8 +267,8 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
     );
 
     if (confirm == true && _household != null) {
-      _household!.members.remove(_settings!.userName);
-      await _household!.save();
+      // Leave household in Firebase
+      await _firebaseService.leaveHousehold(_household!.id, _settings!.userName!);
 
       _settings!.currentHouseholdId = null;
       await _settings!.save();
