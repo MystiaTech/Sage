@@ -50,17 +50,23 @@ class InventoryRepositoryImpl implements InventoryRepository {
     item.lastModified = DateTime.now();
     await box.add(item);
 
+    print('📝 Added item to Hive: ${item.name}, key=${item.key}, householdId=${item.householdId}');
+
     // Sync to Firebase if in a household
     if (item.householdId != null && item.key != null) {
+      print('🚀 Uploading item to Firebase: ${item.name} (key: ${item.key})');
       try {
         await _firebaseService.addFoodItem(
           item.householdId!,
           item,
           item.key.toString(),
         );
+        print('✅ Successfully uploaded to Firebase');
       } catch (e) {
-        print('Failed to sync item to Firebase: $e');
+        print('❌ Failed to sync item to Firebase: $e');
       }
+    } else {
+      print('⚠️ Skipping Firebase sync: householdId=${item.householdId}, key=${item.key}');
     }
   }
 
