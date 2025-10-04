@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Release signing keys - NEVER COMMIT THESE!
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
+# Store assets (optional - can commit if you want)
+store_assets/
