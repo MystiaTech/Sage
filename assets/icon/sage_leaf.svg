@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="#4CAF50"/>
+
+  <!-- Sage leaf -->
+  <path d="M 256 120
+           Q 340 140, 380 200
+           Q 400 240, 390 280
+           Q 380 320, 350 350
+           Q 320 380, 280 390
+           Q 240 400, 200 380
+           L 256 256
+           Q 220 200, 200 160
+           Q 180 120, 220 100
+           Q 240 90, 256 120 Z"
+        fill="#F1F8E9"
+        stroke="#7CB342"
+        stroke-width="3"/>
+
+  <!-- Leaf veins -->
+  <line x1="256" y1="120" x2="256" y2="256" stroke="#7CB342" stroke-width="2" opacity="0.6"/>
+  <line x1="256" y1="256" x2="320" y2="280" stroke="#7CB342" stroke-width="2" opacity="0.6"/>
+  <line x1="256" y1="256" x2="280" y2="320" stroke="#7CB342" stroke-width="2" opacity="0.6"/>
+  <line x1="256" y1="200" x2="300" y2="220" stroke="#7CB342" stroke-width="1.5" opacity="0.5"/>
+  <line x1="256" y1="200" x2="220" y2="180" stroke="#7CB342" stroke-width="1.5" opacity="0.5"/>
+</svg>
