@@ -84,25 +84,37 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
     );
 
     if (result != null && result.isNotEmpty) {
-      // Create household in Firebase
-      final household = await _firebaseService.createHousehold(result, _settings!.userName!);
+      try {
+        // Create household in Firebase
+        final household = await _firebaseService.createHousehold(result, _settings!.userName!);
 
-      // Also save to local Hive for offline access
-      await HiveDatabase.saveHousehold(household);
+        // Also save to local Hive for offline access
+        await HiveDatabase.saveHousehold(household);
 
-      _settings!.currentHouseholdId = household.id;
-      await _settings!.save();
+        _settings!.currentHouseholdId = household.id;
+        await _settings!.save();
 
-      await _loadData();
+        await _loadData();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Household created! Code: ${household.id}'),
-            backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Household created! Code: ${household.id}'),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error creating household: ${e.toString().contains('firebase') ? 'Firebase not configured. See FIREBASE_SETUP.md' : e.toString()}'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       }
     }
   }

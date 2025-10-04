@@ -8,8 +8,15 @@ import 'features/home/screens/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  // Initialize Firebase (gracefully handle if not configured)
+  try {
+    await Firebase.initializeApp();
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('⚠️ Firebase initialization failed: $e');
+    print('Household sharing will not work without Firebase configuration.');
+    print('See FIREBASE_SETUP.md for setup instructions.');
+  }
 
   // Initialize Hive database
   await HiveDatabase.init();
