@@ -169,7 +169,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const ListTile(
             title: Text('Developer'),
-            subtitle: Text('Built with ❤️ using Flutter'),
+            subtitle: Text('Danielle Sapelli'),
+          ),
+          const ListTile(
+            title: Text('Built With'),
+            subtitle: Text('❤️ using Flutter & Claude Code'),
           ),
           ListTile(
             title: const Text('Privacy Policy'),

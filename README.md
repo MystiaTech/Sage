@@ -91,9 +91,14 @@ sage/
 - **Phase 6:** Multi-user & cloud sync
 - **Phase 7:** Advanced features & polish
 
+## Author
+
+**Danielle Sapelli**
+- Built with ❤️ using Flutter & Claude Code
+
 ## Contributing
 
-This is currently a personal project, but ideas and suggestions are welcome!
+Ideas and suggestions are welcome!
 
 ## License
 
@@ -101,6 +106,4 @@ TBD
 
 ---
 
-**Built with 💚 by developers who hate wasting food!**
-
-Let's make kitchens smarter, one scan at a time! 🌿
+🌿 **Making kitchens smarter, one scan at a time!**
