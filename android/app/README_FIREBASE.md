@@ -15,7 +15,7 @@ The current `google-services.json` file is a **PLACEHOLDER** and will **NOT** wo
 
 ### Package Name (must match):
 ```
-com.sage.sage
+com.github.mystiatech.sage
 ```
 
 Without the real Firebase configuration file, household sharing will not work across devices!

@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:PLACEHOLDER:android:PLACEHOLDER",
         "android_client_info": {
-          "package_name": "com.sage.sage"
+          "package_name": "com.github.mystiatech.sage"
         }
       },
       "oauth_client": [],

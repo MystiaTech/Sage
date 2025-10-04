@@ -11,7 +11,7 @@
 ## Step 2: Add Android App
 
 1. In Firebase Console, click the Android icon to add an Android app
-2. Enter package name: `com.example.sage` (must match AndroidManifest.xml)
+2. Enter package name: `com.github.mystiatech.sage` (must match exactly!)
 3. App nickname: `Sage` (optional)
 4. Debug signing certificate SHA-1: (optional, skip for now)
 5. Click "Register app"
