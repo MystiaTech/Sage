@@ -25,6 +25,15 @@ class AppSettings extends HiveObject {
   @HiveField(6)
   String? currentHouseholdId; // ID of the household they're in
 
+  @HiveField(7)
+  String? supabaseUrl; // Supabase project URL (can use free tier OR self-hosted!)
+
+  @HiveField(8)
+  String? supabaseAnonKey; // Supabase anonymous key (public, safe to store)
+
+  @HiveField(9)
+  bool darkModeEnabled; // Dark mode toggle
+
   AppSettings({
     this.discordWebhookUrl,
     this.expirationAlertsEnabled = true,
@@ -33,5 +42,8 @@ class AppSettings extends HiveObject {
     this.sortBy = 'expiration',
     this.userName,
     this.currentHouseholdId,
+    this.supabaseUrl,
+    this.supabaseAnonKey,
+    this.darkModeEnabled = false,
   });
 }

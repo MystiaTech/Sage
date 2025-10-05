@@ -73,10 +73,23 @@ class HiveDatabase {
     await box.put(household.id, household);
   }
 
-  /// Clear all data
+  /// Clear all food items
   static Future<void> clearAll() async {
     final box = await getFoodBox();
     await box.clear();
+  }
+
+  /// Clear ALL data (food, settings, households)
+  static Future<void> clearAllData() async {
+    final foodBox = await getFoodBox();
+    final settingsBox = await getSettingsBox();
+    final householdsBox = await getHouseholdsBox();
+
+    await foodBox.clear();
+    await settingsBox.clear();
+    await householdsBox.clear();
+
+    print('✅ All data cleared from Hive');
   }
 
   /// Close all boxes

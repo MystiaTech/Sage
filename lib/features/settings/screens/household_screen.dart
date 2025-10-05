@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/local/hive_database.dart';
-import '../../household/services/firebase_household_service.dart';
+import '../../household/services/supabase_household_service.dart';
 import '../models/app_settings.dart';
 import '../models/household.dart';
 
@@ -14,7 +14,7 @@ class HouseholdScreen extends StatefulWidget {
 }
 
 class _HouseholdScreenState extends State<HouseholdScreen> {
-  final _firebaseService = FirebaseHouseholdService();
+  final _supabaseService = SupabaseHouseholdService();
   AppSettings? _settings;
   Household? _household;
   bool _isLoading = true;
@@ -31,8 +31,8 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
 
     if (settings.currentHouseholdId != null) {
       try {
-        // Load from Firebase
-        household = await _firebaseService.getHousehold(settings.currentHouseholdId!);
+        // Load from Supabase
+        household = await _supabaseService.getHousehold(settings.currentHouseholdId!);
       } catch (e) {
         // Household not found
       }
@@ -86,7 +86,7 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
     if (result != null && result.isNotEmpty) {
       try {
         // Create household in Firebase
-        final household = await _firebaseService.createHousehold(result, _settings!.userName!);
+        final household = await _supabaseService.createHousehold(result, _settings!.userName!);
 
         // Also save to local Hive for offline access
         await HiveDatabase.saveHousehold(household);
@@ -164,40 +164,24 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
       try {
         final code = result.toUpperCase();
 
-        // Join household in Firebase
-        final success = await _firebaseService.joinHousehold(code, _settings!.userName!);
+        // Join household in Supabase
+        final household = await _supabaseService.joinHousehold(code, _settings!.userName!);
 
-        if (success) {
-          // Load the household data
-          final household = await _firebaseService.getHousehold(code);
+        // Save to local Hive for offline access
+        await HiveDatabase.saveHousehold(household);
 
-          if (household != null) {
-            // Save to local Hive for offline access
-            await HiveDatabase.saveHousehold(household);
+        _settings!.currentHouseholdId = household.id;
+        await _settings!.save();
 
-            _settings!.currentHouseholdId = household.id;
-            await _settings!.save();
+        await _loadData();
 
-            await _loadData();
-
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Joined ${household.name}!'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
-            }
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Household not found. Check the code and try again.'),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Joined ${household.name}!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -254,6 +238,66 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
     }
   }
 
+  Future<void> _editHouseholdName() async {
+    final nameController = TextEditingController(text: _household!.name);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Household Name'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: 'Household Name',
+            hintText: 'e.g., Smith Family',
+          ),
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameController.text),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && result != _household!.name) {
+      try {
+        // Update in Supabase
+        await _supabaseService.updateHouseholdName(_household!.id, result);
+
+        // Update local
+        _household!.name = result;
+        await HiveDatabase.saveHousehold(_household!);
+
+        setState(() {});
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Household name updated!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating name: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _leaveHousehold() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -280,7 +324,7 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
 
     if (confirm == true && _household != null) {
       // Leave household in Firebase
-      await _firebaseService.leaveHousehold(_household!.id, _settings!.userName!);
+      await _supabaseService.leaveHousehold(_household!.id, _settings!.userName!);
 
       _settings!.currentHouseholdId = null;
       await _settings!.save();
@@ -392,18 +436,40 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _household!.name,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _household!.name,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20),
+                                onPressed: _editHouseholdName,
+                                tooltip: 'Edit household name',
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Owner: ${_household!.ownerName}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'You: ${_settings!.userName ?? "Not set"}',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 18),
+                                onPressed: _showNameInputDialog,
+                                tooltip: 'Edit your name',
+                              ),
+                            ],
                           ),
                         ],
                       ),

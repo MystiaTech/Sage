@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/colors.dart';
-import '../../../data/local/hive_database.dart';
-import '../../household/services/inventory_sync_service.dart';
 import '../../inventory/controllers/inventory_controller.dart';
 import '../../inventory/screens/add_item_screen.dart';
 import '../../inventory/screens/barcode_scanner_screen.dart';
@@ -10,55 +8,11 @@ import '../../inventory/screens/inventory_screen.dart';
 import '../../settings/screens/settings_screen.dart';
 
 /// Home screen - Dashboard with expiring items and quick actions
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _syncService = InventorySyncService();
-
-  @override
-  void initState() {
-    super.initState();
-    _startSyncIfNeeded();
-  }
-
-  @override
-  void dispose() {
-    _syncService.removeSyncCallback(_onItemsSync);
-    _syncService.stopSync();
-    super.dispose();
-  }
-
-  Future<void> _startSyncIfNeeded() async {
-    final settings = await HiveDatabase.getSettings();
-    if (settings.currentHouseholdId != null) {
-      try {
-        // Register callback to refresh UI when items sync
-        _syncService.addSyncCallback(_onItemsSync);
-
-        await _syncService.startSync(settings.currentHouseholdId!);
-        print('🔄 Started syncing inventory for household: ${settings.currentHouseholdId}');
-      } catch (e) {
-        print('Failed to start sync: $e');
-      }
-    }
-  }
-
-  void _onItemsSync() {
-    if (mounted) {
-      // Refresh all inventory providers when Firebase syncs
-      ref.invalidate(itemCountProvider);
-      ref.invalidate(expiringSoonProvider);
-      print('✅ UI refreshed after Firebase sync');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final itemCount = ref.watch(itemCountProvider);
     final expiringSoon = ref.watch(expiringSoonProvider);
 
@@ -216,14 +170,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: _buildActionCard(
                       context,
-                      icon: Icons.book,
-                      label: 'Recipes',
+                      icon: Icons.settings,
+                      label: 'Settings',
                       color: AppColors.primaryLight,
                       onTap: () {
-                        // TODO: Navigate to recipes
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Recipes coming soon!'),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
                           ),
                         );
                       },

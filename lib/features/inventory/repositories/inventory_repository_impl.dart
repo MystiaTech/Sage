@@ -1,13 +1,13 @@
 import 'package:hive/hive.dart';
 import '../../../data/local/hive_database.dart';
 import '../../settings/models/app_settings.dart';
-import '../../household/services/firebase_household_service.dart';
+import '../../household/services/supabase_household_service.dart';
 import '../models/food_item.dart';
 import 'inventory_repository.dart';
 
-/// Hive implementation of InventoryRepository with Firebase sync
+/// Hive implementation of InventoryRepository with Supabase sync (FOSS!)
 class InventoryRepositoryImpl implements InventoryRepository {
-  final _firebaseService = FirebaseHouseholdService();
+  final _supabaseService = SupabaseHouseholdService();
   Future<Box<FoodItem>> get _box async => await HiveDatabase.getFoodBox();
 
   /// Get the current household ID from settings
@@ -52,21 +52,21 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
     print('📝 Added item to Hive: ${item.name}, key=${item.key}, householdId=${item.householdId}');
 
-    // Sync to Firebase if in a household
+    // Sync to Supabase if in a household
     if (item.householdId != null && item.key != null) {
-      print('🚀 Uploading item to Firebase: ${item.name} (key: ${item.key})');
+      print('🚀 Uploading item to Supabase: ${item.name} (key: ${item.key})');
       try {
-        await _firebaseService.addFoodItem(
+        await _supabaseService.addFoodItem(
           item.householdId!,
           item,
           item.key.toString(),
         );
-        print('✅ Successfully uploaded to Firebase');
+        print('✅ Successfully uploaded to Supabase');
       } catch (e) {
-        print('❌ Failed to sync item to Firebase: $e');
+        print('❌ Failed to sync item to Supabase: $e');
       }
     } else {
-      print('⚠️ Skipping Firebase sync: householdId=${item.householdId}, key=${item.key}');
+      print('⚠️ Skipping Supabase sync: householdId=${item.householdId}, key=${item.key}');
     }
   }
 
@@ -75,16 +75,16 @@ class InventoryRepositoryImpl implements InventoryRepository {
     item.lastModified = DateTime.now();
     await item.save();
 
-    // Sync to Firebase if in a household
+    // Sync to Supabase if in a household
     if (item.householdId != null && item.key != null) {
       try {
-        await _firebaseService.updateFoodItem(
+        await _supabaseService.updateFoodItem(
           item.householdId!,
           item,
           item.key.toString(),
         );
       } catch (e) {
-        print('Failed to sync item update to Firebase: $e');
+        print('Failed to sync item update to Supabase: $e');
       }
     }
   }
@@ -94,15 +94,15 @@ class InventoryRepositoryImpl implements InventoryRepository {
     final box = await _box;
     final item = box.get(id);
 
-    // Sync deletion to Firebase if in a household
+    // Sync deletion to Supabase if in a household
     if (item != null && item.householdId != null) {
       try {
-        await _firebaseService.deleteFoodItem(
+        await _supabaseService.deleteFoodItem(
           item.householdId!,
           id.toString(),
         );
       } catch (e) {
-        print('Failed to sync item deletion to Firebase: $e');
+        print('Failed to sync item deletion to Supabase: $e');
       }
     }
 

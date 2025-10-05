@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Sage Kitchen Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .last-updated {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #4CAF50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background: #e8f5e9;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 Terms of Service</h1>
+        <p class="last-updated">Last Updated: October 4, 2025</p>
+
+        <div class="highlight">
+            <strong>TL;DR:</strong> Sage is free, open-source software. Use it however you want, but don't sue us if something goes wrong. We're not responsible for expired food or food safety decisions you make.
+        </div>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>By downloading, installing, or using Sage ("the App"), you agree to these Terms of Service. If you don't agree, please don't use the App.</p>
+
+        <h2>2. License & Open Source</h2>
+        <p>Sage is licensed under the <strong>MIT License</strong>. This means:</p>
+        <ul>
+            <li>✅ You can use Sage for free, forever</li>
+            <li>✅ You can modify the source code</li>
+            <li>✅ You can distribute your own versions</li>
+            <li>✅ You can use it commercially</li>
+            <li>❌ We provide NO WARRANTY (see Section 8)</li>
+        </ul>
+
+        <h2>3. Description of Service</h2>
+        <p>Sage is a kitchen management app that helps you:</p>
+        <ul>
+            <li>Track food inventory with expiration dates</li>
+            <li>Scan barcodes for product information</li>
+            <li>Receive expiration notifications</li>
+            <li>Share household inventory with family members (optional)</li>
+            <li>Integrate with Discord for notifications (optional)</li>
+        </ul>
+
+        <div class="warning">
+            <strong>⚠️ IMPORTANT DISCLAIMER:</strong> Sage is a tracking tool, NOT a food safety authority. Always use your judgment when consuming food. When in doubt, throw it out!
+        </div>
+
+        <h2>4. User Responsibilities</h2>
+        <p>You are responsible for:</p>
+        <ul>
+            <li><strong>Food safety decisions</strong> - Sage provides expiration tracking, but YOU decide what's safe to eat</li>
+            <li><strong>Data accuracy</strong> - Ensuring the information you enter is correct</li>
+            <li><strong>Barcode data</strong> - Third-party APIs may provide incorrect product information</li>
+            <li><strong>Household members</strong> - Managing who has access to your household</li>
+            <li><strong>Your data</strong> - Backing up important information</li>
+        </ul>
+
+        <h2>5. Food Safety Disclaimer</h2>
+        <p><strong>Sage is NOT responsible for:</strong></p>
+        <ul>
+            <li>❌ Foodborne illness or food poisoning</li>
+            <li>❌ Incorrect expiration date predictions</li>
+            <li>❌ Barcode API errors or incorrect product data</li>
+            <li>❌ Decisions you make about consuming food</li>
+            <li>❌ Food waste or spoiled items</li>
+        </ul>
+        <p><strong>Always follow USDA food safety guidelines and use common sense!</strong></p>
+
+        <h2>6. Cloud Services & Third-Party APIs</h2>
+
+        <h3>Supabase Sync (Optional)</h3>
+        <p>If you use household sharing:</p>
+        <ul>
+            <li>Data is stored on Supabase (open-source backend)</li>
+            <li>We host a free Supabase instance for your convenience</li>
+            <li>We may discontinue this service with 30 days notice</li>
+            <li>You can self-host Supabase for full control</li>
+        </ul>
+
+        <h3>Barcode APIs</h3>
+        <p>Sage uses public APIs (Open Food Facts, UPCItemDB) for product lookups:</p>
+        <ul>
+            <li>These are third-party services we don't control</li>
+            <li>Product information may be incorrect or outdated</li>
+            <li>APIs may be unavailable at times</li>
+        </ul>
+
+        <h3>Discord Webhooks (Optional)</h3>
+        <p>If you configure Discord notifications:</p>
+        <ul>
+            <li>You're responsible for your webhook URL security</li>
+            <li>We don't control Discord's availability</li>
+            <li>Notifications may fail to deliver</li>
+        </ul>
+
+        <h2>7. Prohibited Uses</h2>
+        <p>You may NOT use Sage to:</p>
+        <ul>
+            <li>Violate any laws or regulations</li>
+            <li>Harm, harass, or impersonate others</li>
+            <li>Distribute malware or malicious code</li>
+            <li>Attempt to hack or compromise the app or Supabase</li>
+            <li>Scrape or abuse third-party APIs</li>
+        </ul>
+
+        <h2>8. Warranty Disclaimer</h2>
+        <div class="warning">
+            <p><strong>SAGE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.</strong></p>
+            <p>We make NO guarantees that:</p>
+            <ul>
+                <li>The app will work perfectly</li>
+                <li>Data won't be lost</li>
+                <li>Expiration dates are accurate</li>
+                <li>Cloud sync will always work</li>
+                <li>Third-party APIs will be available</li>
+            </ul>
+        </div>
+
+        <h2>9. Limitation of Liability</h2>
+        <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY LAW:</strong></p>
+        <p>We (the Sage developers) are NOT liable for:</p>
+        <ul>
+            <li>Food poisoning or illness</li>
+            <li>Lost or corrupted data</li>
+            <li>Missed expiration notifications</li>
+            <li>Food waste or spoilage</li>
+            <li>Damages from using the app</li>
+            <li>Third-party service failures</li>
+        </ul>
+        <p><strong>Your use of Sage is entirely at your own risk.</strong></p>
+
+        <h2>10. Data & Privacy</h2>
+        <p>See our <a href="privacy-policy.html">Privacy Policy</a> for details on how we handle your data.</p>
+        <p>Key points:</p>
+        <ul>
+            <li>Your data is stored locally on your device</li>
+            <li>Cloud sync is optional and uses Supabase</li>
+            <li>We don't sell or track your data</li>
+            <li>You can delete your data anytime</li>
+        </ul>
+
+        <h2>11. Children's Use</h2>
+        <p>Sage is not intended for children under 13. If you're under 18, please get parental permission before using the app.</p>
+
+        <h2>12. Changes to Service</h2>
+        <p>We may:</p>
+        <ul>
+            <li>Update the app at any time</li>
+            <li>Add or remove features</li>
+            <li>Discontinue hosted Supabase service with 30 days notice</li>
+            <li>Change these Terms of Service (we'll update the date above)</li>
+        </ul>
+
+        <h2>13. Account Termination</h2>
+        <p>Since Sage doesn't use accounts, there's nothing to terminate! Just uninstall the app to stop using it.</p>
+        <p>If you're using household sharing, you can leave your household in Settings.</p>
+
+        <h2>14. Open Source</h2>
+        <p>Sage's source code is available on GitHub under the MIT License. You can:</p>
+        <ul>
+            <li>Fork and modify the code</li>
+            <li>Submit bug reports and pull requests</li>
+            <li>Contribute to development</li>
+            <li>Create your own version</li>
+        </ul>
+
+        <h2>15. Governing Law</h2>
+        <p>These Terms are governed by the laws of [Your jurisdiction]. Any disputes will be resolved in [Your location] courts.</p>
+
+        <h2>16. Contact</h2>
+        <p>Questions about these Terms? Contact us:</p>
+        <ul>
+            <li>GitHub Issues: <a href="https://github.com/yourusername/sage" target="_blank">github.com/yourusername/sage</a></li>
+            <li>Email: [Your contact email]</li>
+        </ul>
+
+        <div class="highlight">
+            <strong>🌿 Thank You for Using Sage!</strong><br>
+            We built this app to help reduce food waste and make kitchen management easier. It's free, open-source, and privacy-focused. Enjoy!
+        </div>
+    </div>
+</body>
+</html>

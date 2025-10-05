@@ -17,14 +17,6 @@ class InventoryScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('📦 Inventory'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Search functionality
-            },
-          ),
-        ],
       ),
       body: inventoryState.when(
         data: (items) {
